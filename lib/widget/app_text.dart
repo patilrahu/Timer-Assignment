@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:remburshiment_app/constant/string_constant.dart';
 
 // ignore: must_be_immutable
 class AppText extends StatefulWidget {
