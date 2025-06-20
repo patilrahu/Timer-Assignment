@@ -22,6 +22,7 @@ class StringConstant {
   static const endingBreakEarly = "Ending break early?";
   static const endingBreakEarlySubText =
       "Are you sure you want to end your break now? Take this time to recharge before your next task.";
+  static const endNowText = "End now";
   static const questionOption = [
     "Cutting vegetables",
     "Sweeping",

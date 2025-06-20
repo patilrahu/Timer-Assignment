@@ -37,6 +37,9 @@ dependencies:
   hexcolor: ^3.0.1
   toastification: ^3.0.3
   google_fonts: ^6.2.1
+  percent_indicator: ^4.2.5
+  firebase_core: ^3.14.0
+  firebase_auth: ^5.6.0
 
 dev_dependencies:
   flutter_test:

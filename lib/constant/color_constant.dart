@@ -13,4 +13,8 @@ class ColorConstant {
   static const gradientColor1 = "#803FD7";
   static const gradientColor2 = "#3057D8";
   static const gradientColor3 = "#3B80C1";
+  static const greenColor = "#429777";
+  static const lightRedColor = "#A73636";
+  static const lightGreyColor = "#D1D1D1";
+  static const arcColor = "#738DD7";
 }
