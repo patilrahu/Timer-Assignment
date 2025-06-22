@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:timer_app/feature/home/ui/home.dart';
 import 'package:timer_app/feature/login/ui/login.dart';
 import 'package:timer_app/feature/question/ui/questions.dart';
 import 'package:timer_app/utils/shared_preference_helper.dart';
@@ -26,12 +27,26 @@ class _SplashState extends State<Splash> {
     var isQuestionScreen = await SharedPreferenceHelper.getValue(
       SharedPreferenceHelper.isQuestionScreen,
     );
-    if (isQuestionScreen == null || isQuestionScreen == false) {
+    var isLogin = await SharedPreferenceHelper.getValue(
+      SharedPreferenceHelper.isLogin,
+    );
+    if ((isQuestionScreen == null || isQuestionScreen == false) &&
+        (isLogin == null || isLogin == false)) {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) {
-            return Questions();
+            return Login();
+          },
+        ),
+        (route) => false,
+      );
+    } else if (isLogin == true) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return Home();
           },
         ),
         (route) => false,

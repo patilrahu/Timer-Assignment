@@ -6,4 +6,5 @@ class ImageConstant {
   static const menuImage = "assets/images/menu.png";
   static const smallStarImage = "assets/images/small_star.png";
   static const bigStarImage = "assets/images/big_star.png";
+  static const correctImage = "assets/images/success.png";
 }

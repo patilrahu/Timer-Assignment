@@ -15,7 +15,7 @@ class _AppCheckboxState extends State<AppCheckbox> {
   bool isSelected = false;
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         setState(() {
           isSelected = !isSelected;

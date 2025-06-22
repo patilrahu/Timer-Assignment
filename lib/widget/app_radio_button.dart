@@ -21,7 +21,7 @@ class AppRadioButton extends StatefulWidget {
 class _AppRadioButtonState extends State<AppRadioButton> {
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: widget.onPressed,
       child: Container(
         height: 24,

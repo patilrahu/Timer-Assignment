@@ -184,13 +184,21 @@ class Login extends ConsumerWidget {
                                 SharedPreferenceHelper.userName,
                                 user.user?.displayName,
                               );
-                              print(user);
+
                               ToastHelper.showSuccessToast(
                                 context,
                                 StringConstant.loginSuccess,
                               );
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return Questions();
+                                  },
+                                ),
+                                (route) => false,
+                              );
                             }
-                            print("Login successful: ${user}");
                           }
                         },
                       );

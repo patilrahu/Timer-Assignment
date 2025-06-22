@@ -31,6 +31,8 @@ class StringConstant {
   static const signUpSuccess =
       'Congrats! Signed up successfully. Please log in with your credentials.';
   static const loginSuccess = 'Login successfully!';
+  static const breakOverSuceess =
+      "Hope you are feeling refreshed and ready to start working again";
   static const questionOption = [
     "Cutting vegetables",
     "Sweeping",

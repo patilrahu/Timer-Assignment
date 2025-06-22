@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:timer_app/constant/color_constant.dart';
 import 'package:timer_app/constant/image_constant.dart';
 import 'package:timer_app/constant/string_constant.dart';
 import 'package:timer_app/feature/home/ui/break_widget.dart';
+import 'package:timer_app/feature/home/view_model/home_view_model.dart';
 import 'package:timer_app/widget/app_background.dart';
 import 'package:timer_app/widget/app_text.dart';
 
-class Home extends StatefulWidget {
+class Home extends ConsumerStatefulWidget {
   const Home({super.key});
 
   @override
-  State<Home> createState() => _HomeState();
+  ConsumerState<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends ConsumerState<Home> {
   @override
   Widget build(BuildContext context) {
     return AppBackground(
       requiredSafeArea: false,
       child: Stack(
         children: [
-          Image.asset(ImageConstant.headerImage),
+          Image.asset(
+            ImageConstant.headerImage,
+            width: MediaQuery.of(context).size.width,
+            fit: BoxFit.cover,
+          ),
           Positioned(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -30,7 +36,7 @@ class _HomeState extends State<Home> {
                 children: [
                   Container(
                     height: 56,
-                    margin: const EdgeInsets.only(top: 20),
+                    margin: const EdgeInsets.only(top: 50),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -86,12 +92,27 @@ class _HomeState extends State<Home> {
                       ],
                     ),
                   ),
-                  AppText(
-                    text: 'Hi, Reshma!',
-                    color: HexColor(ColorConstant.whiteColor),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                  Consumer(
+                    builder: (context, ref, child) {
+                      var name = ref.watch(nameProvider);
+                      return name.when(
+                        data: (name) => AppText(
+                          text: 'Hi, $name!',
+                          color: HexColor(ColorConstant.whiteColor),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        loading: () => Container(),
+                        error: (error, stack) => AppText(
+                          text: 'Hi!',
+                          color: HexColor(ColorConstant.whiteColor),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    },
                   ),
+
                   AppText(
                     text: StringConstant.youAreOnBreakText,
                     color: Colors.white,

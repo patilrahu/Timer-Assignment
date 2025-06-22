@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timer_app/backend/firebase_database.dart';
 import 'package:timer_app/constant/string_constant.dart';
@@ -7,11 +9,11 @@ final answersProvider = StateProvider<Map<String, dynamic>>(
   (ref) => {
     StringConstant.questionText: null,
     StringConstant.doYouHavePhone: null,
-    StringConstant.willYouAbleToGetPhone: null,
     StringConstant.doYouUseGoogleMaps: null,
     StringConstant.dateOfBirth: null,
   },
 );
+final isLoadingProvider = StateProvider<bool>((ref) => false);
 final questionViewModelProvider =
     StateNotifierProvider<QuestionViewModel, void>(
       (ref) => QuestionViewModel(),
@@ -20,12 +22,22 @@ final questionViewModelProvider =
 class QuestionViewModel extends StateNotifier<void> {
   QuestionViewModel() : super(null);
 
-  Future<bool> saveDatainDatabase(Map<String, dynamic> data) async {
+  Future<bool> saveDatainDatabase(
+    Map<String, dynamic> data,
+    WidgetRef ref,
+  ) async {
     try {
+      ref.read(isLoadingProvider.notifier).state = true;
+      final now = DateTime.now();
+      data['break_start_time'] = now.toIso8601String();
+      data['break_duration_minutes'] = 30;
       await FirebaseDatabaseHelper.storeQuestionAnswerData(data);
+      await Future.delayed(const Duration(seconds: 2));
+      ref.read(isLoadingProvider.notifier).state = false;
       return true;
     } catch (e) {
       print(e);
+      ref.read(isLoadingProvider.notifier).state = false;
       return false;
     }
   }

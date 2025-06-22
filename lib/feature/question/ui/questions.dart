@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hexcolor/hexcolor.dart';
@@ -199,7 +201,8 @@ class _QuestionsState extends ConsumerState<Questions> {
                                 keyboardType: TextInputType.number,
                                 hintText: 'DD',
                                 onChanged: (value) {
-                                  if (value != '' && value.length == 2) {
+                                  if (value != '') {
+                                    _setDob(selectedAnswers);
                                     ref
                                         .read(
                                           questionViewModelProvider.notifier,
@@ -208,7 +211,6 @@ class _QuestionsState extends ConsumerState<Questions> {
                                           ref,
                                           ref.read(answersProvider),
                                         );
-                                    _setDob(selectedAnswers);
                                   }
                                 },
                                 maxLength: 2,
@@ -223,7 +225,8 @@ class _QuestionsState extends ConsumerState<Questions> {
                                 controller: _monthController,
                                 hintText: 'MM',
                                 onChanged: (value) {
-                                  if (value != '' && value.length == 2) {
+                                  if (value != '') {
+                                    _setDob(selectedAnswers);
                                     ref
                                         .read(
                                           questionViewModelProvider.notifier,
@@ -232,7 +235,6 @@ class _QuestionsState extends ConsumerState<Questions> {
                                           ref,
                                           ref.read(answersProvider),
                                         );
-                                    _setDob(selectedAnswers);
                                   }
                                 },
                               ),
@@ -246,7 +248,8 @@ class _QuestionsState extends ConsumerState<Questions> {
                                 hintText: 'YYYY',
                                 keyboardType: TextInputType.number,
                                 onChanged: (value) {
-                                  if (value != '' && value.length == 4) {
+                                  if (value != '') {
+                                    _setDob(selectedAnswers);
                                     ref
                                         .read(
                                           questionViewModelProvider.notifier,
@@ -255,7 +258,6 @@ class _QuestionsState extends ConsumerState<Questions> {
                                           ref,
                                           ref.read(answersProvider),
                                         );
-                                    _setDob(selectedAnswers);
                                   }
                                 },
                               ),
@@ -271,28 +273,19 @@ class _QuestionsState extends ConsumerState<Questions> {
 
             Consumer(
               builder: (context, ref, child) {
-                final allAnswered = ref.watch(answersProvider).values.every((
-                  value,
-                ) {
-                  if (value == null) return false;
-                  if (value is String && value.trim().isEmpty) return false;
-                  if (value is List && value.isEmpty) return false;
-                  return true;
-                });
+                final allAnswered = ref.watch(progressProvider);
+                bool isLoading = ref.watch(isLoadingProvider);
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12, top: 15),
                   child: AppButton(
                     title: StringConstant.continueText,
-                    isEnable: ref
-                        .watch(answersProvider.notifier)
-                        .state
-                        .values
-                        .isEmpty,
+                    isEnable: allAnswered == 1.0,
+                    isLoading: isLoading,
                     onPressed: () async {
                       final selectedAnswers = ref.watch(answersProvider);
                       final success = await ref
                           .read(questionViewModelProvider.notifier)
-                          .saveDatainDatabase(selectedAnswers);
+                          .saveDatainDatabase(selectedAnswers, ref);
                       if (success) {
                         SharedPreferenceHelper.save(
                           SharedPreferenceHelper.isQuestionScreen,
@@ -335,6 +328,8 @@ class _QuestionsState extends ConsumerState<Questions> {
         _yearController.text.length == 4) {
       selectedAnswers[StringConstant.dateOfBirth] =
           "${_dayController.text}-${_monthController.text}-${_yearController.text}";
+    } else {
+      selectedAnswers[StringConstant.dateOfBirth] = "";
     }
   }
 
@@ -375,6 +370,18 @@ class _QuestionsState extends ConsumerState<Questions> {
                     setState(() {
                       selectedAnswers[question] = option;
                     });
+                    if (question == StringConstant.doYouHavePhone) {
+                      if (selectedAnswers[question] == "No") {
+                        ref.read(answersProvider.notifier).state.addAll({
+                          StringConstant.willYouAbleToGetPhone: null,
+                        });
+                      } else {
+                        ref
+                            .read(answersProvider.notifier)
+                            .state
+                            .remove(StringConstant.willYouAbleToGetPhone);
+                      }
+                    }
                     ref
                         .read(questionViewModelProvider.notifier)
                         .onAnswerChanged(ref, ref.read(answersProvider));
