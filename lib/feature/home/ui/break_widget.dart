@@ -53,7 +53,8 @@ class _BreakWidgetState extends ConsumerState<BreakWidget> {
       child: Consumer(
         builder: (context, ref, child) {
           final breakState = ref.watch(breakData);
-
+          final currentTime =
+              ref.watch(timeTickerProvider).value ?? DateTime.now();
           return breakState.when(
             data: (data) {
               if (data == null || data['start_time'] == null) {
@@ -64,6 +65,20 @@ class _BreakWidgetState extends ConsumerState<BreakWidget> {
                   ? DateTime.parse(data['start_time'])
                   : data['start_time'] as DateTime;
 
+              final elapsedTime = _getElapsedTime(startTime);
+              final percent = _calculatePercent(
+                currentTime.difference(startTime),
+              );
+              if (percent >= 1.0) {
+                ref.read(breakEndedProvider.notifier).state = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  await FirebaseDatabaseHelper.endBreakNow(
+                    startTime: null,
+                    duration: null,
+                  );
+                  await ref.read(breakData.notifier).fetchBreakData();
+                });
+              }
               return Column(
                 children: [
                   Padding(
@@ -100,7 +115,7 @@ class _BreakWidgetState extends ConsumerState<BreakWidget> {
                             center: Align(
                               alignment: Alignment.center,
                               child: AppText(
-                                text: _getElapsedTime(startTime),
+                                text: elapsedTime,
                                 color: Colors.white,
                                 fontSize: 32,
                                 fontWeight: FontWeight.w800,
@@ -110,9 +125,8 @@ class _BreakWidgetState extends ConsumerState<BreakWidget> {
                             arcBackgroundColor: HexColor(
                               ColorConstant.arcColor,
                             ),
-                            percent: _calculatePercent(
-                              DateTime.now().difference(startTime),
-                            ),
+                            percent: percent,
+                            animationDuration: 0,
                             arcType: ArcType.FULL,
                             animation: true,
                             circularStrokeCap: CircularStrokeCap.round,
@@ -167,7 +181,10 @@ class _BreakWidgetState extends ConsumerState<BreakWidget> {
                     child: AppButton(
                       title: StringConstant.endMyBreak,
                       onPressed: () {
-                        showBreakBottomSheet();
+                        showBreakBottomSheet(
+                          percent: percent,
+                          startTime: startTime,
+                        );
                       },
                       isEnable: true,
                       buttonBackgroundColor: ColorConstant.redColor,
@@ -199,9 +216,10 @@ class _BreakWidgetState extends ConsumerState<BreakWidget> {
   }
 
   String _formatTime(DateTime time) {
+    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
     final minute = time.minute.toString().padLeft(2, '0');
     final period = time.hour >= 12 ? 'PM' : 'AM';
-    return '$minute $period';
+    return '$hour:$minute $period';
   }
 
   double _calculatePercent(Duration elapsed) {
@@ -209,7 +227,7 @@ class _BreakWidgetState extends ConsumerState<BreakWidget> {
     return percent.clamp(0.0, 1.0);
   }
 
-  void showBreakBottomSheet() {
+  void showBreakBottomSheet({double percent = 0.0, DateTime? startTime}) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -263,6 +281,10 @@ class _BreakWidgetState extends ConsumerState<BreakWidget> {
                         buttonBackgroundColor: ColorConstant.greenColor,
                         title: StringConstant.continueText,
                         onPressed: () async {
+                          if (percent < 1.0) {
+                            ref.read(breakEndedProvider.notifier).state = false;
+                            ref.read(breakData.notifier).fetchBreakData();
+                          }
                           Navigator.pop(context);
                         },
                       ),
@@ -270,9 +292,24 @@ class _BreakWidgetState extends ConsumerState<BreakWidget> {
                     Expanded(
                       child: GestureDetector(
                         onTap: () async {
-                          await FirebaseDatabaseHelper.endBreakNow();
-                          ref.read(breakData.notifier).fetchBreakData();
-                          Navigator.pop(context);
+                          if (percent < 1.0) {
+                            final now = DateTime.now();
+                            final duration = now
+                                .difference(startTime!)
+                                .inMinutes;
+                            await FirebaseDatabaseHelper.endBreakNow(
+                              startTime: startTime,
+                              duration: duration,
+                            );
+                            ref.read(breakEndedProvider.notifier).state = true;
+                            ref.read(breakData.notifier).fetchBreakData();
+                            Navigator.pop(context);
+                          } else {
+                            ref.read(breakEndedProvider.notifier).state = true;
+                            await FirebaseDatabaseHelper.endBreakNow();
+                            ref.read(breakData.notifier).fetchBreakData();
+                            Navigator.pop(context);
+                          }
                         },
                         child: Container(
                           height: 48,

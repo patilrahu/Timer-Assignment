@@ -8,6 +8,14 @@ final nameProvider = FutureProvider<String>((ref) async {
       ) ??
       '';
 });
+final breakEndedProvider = StateProvider<bool>((ref) => false);
+final timeTickerProvider = StreamProvider<DateTime>((ref) {
+  final breakEnded = ref.watch(breakEndedProvider);
+  if (breakEnded) {
+    return const Stream.empty();
+  }
+  return Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now());
+});
 
 final breakData =
     StateNotifierProvider<HomeViewModel, AsyncValue<Map<String, dynamic>?>>(

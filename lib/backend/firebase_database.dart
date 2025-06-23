@@ -40,13 +40,17 @@ class FirebaseDatabaseHelper {
     return {'start_time': breakStart, 'duration_minutes': duration};
   }
 
-  static Future<void> endBreakNow() async {
+  static Future<void> endBreakNow({
+    DateTime? startTime,
+    dynamic duration,
+  }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw Exception("User not logged in");
-
-    await FirebaseFirestore.instance.collection(_dbName).doc(user.uid).update({
-      'answers.break_start_time': null,
-      'answers.break_duration_minutes': null,
-    });
+    print(startTime);
+    print(duration);
+    // await FirebaseFirestore.instance.collection(_dbName).doc(user.uid).update({
+    //   'answers.break_start_time': startTime,
+    //   'answers.break_duration_minutes': duration,
+    // });
   }
 }
